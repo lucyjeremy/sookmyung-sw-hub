@@ -1,7 +1,5 @@
-import { useState } from 'react'
-
-// 필터 옵션 그룹들
-const filterGroups = [
+// 필터 옵션 그룹들 — 외부에서도 쓸 수 있게 export
+export const filterGroups = [
   {
     label: '정렬',
     options: ['신청 마감순', '활동 시작순', '최신순'],
@@ -20,28 +18,8 @@ const filterGroups = [
   },
 ]
 
-function FilterBar() {
-  // 각 그룹별로 어떤 옵션이 선택돼있는지 저장
-  // 예: { 정렬: ['신청 마감순'], 활동 사이트: ['WISE'], ... }
-  const [selected, setSelected] = useState({})
-
-  // 토글 함수: 클릭하면 켜졌다 꺼졌다
-  const toggle = (group, option) => {
-    setSelected((prev) => {
-      const current = prev[group] || []
-      const isOn = current.includes(option)
-      
-      // 정렬은 1개만 선택 가능, 나머지는 여러 개 가능
-      if (group === '정렬') {
-        return { ...prev, [group]: isOn ? [] : [option] }
-      }
-      return {
-        ...prev,
-        [group]: isOn ? current.filter((o) => o !== option) : [...current, option],
-      }
-    })
-  }
-
+// props로 selected, onToggle 받기
+function FilterBar({ selected, onToggle }) {
   const isActive = (group, option) => 
     (selected[group] || []).includes(option)
 
@@ -57,7 +35,7 @@ function FilterBar() {
               {group.options.map((option) => (
                 <button
                   key={option}
-                  onClick={() => toggle(group.label, option)}
+                  onClick={() => onToggle(group.label, option)}
                   className={
                     isActive(group.label, option)
                       ? 'text-sm px-3 py-1 rounded-full border bg-purple-700 text-white border-purple-700'
