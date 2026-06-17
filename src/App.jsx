@@ -5,11 +5,13 @@ import SiteLinks from './components/SiteLinks'
 import ActivityCard from './components/ActivityCard'
 import FilterBar from './components/FilterBar'
 import MyPage from './pages/MyPage'
+import SearchBar from './components/SearchBar'
 import { fetchActivities } from './api/activities'
 import { applyFiltersAndSort } from './utils/filter'
 
 function HomePage({ activities, loading, error }) {
   const [selected, setSelected] = useState({})
+  const [keyword, setKeyword] = useState('')
 
   const handleToggle = (group, option) => {
     setSelected(prev => {
@@ -26,14 +28,15 @@ function HomePage({ activities, loading, error }) {
   }
 
   const visibleActivities = useMemo(
-    () => applyFiltersAndSort(activities, selected),
-    [activities, selected]
+    () => applyFiltersAndSort(activities, selected, keyword),
+    [activities, selected, keyword]
   )
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-8">
       <SiteLinks />
       <FilterBar selected={selected} onToggle={handleToggle} />
+      <SearchBar value={keyword} onChange={setKeyword} />
 
       <div className="text-sm text-gray-600 mb-4">
         {loading ? (
