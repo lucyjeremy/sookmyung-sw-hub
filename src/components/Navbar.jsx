@@ -1,6 +1,25 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { getCurrentUser, logout } from '../utils/auth'
 
 function Navbar() {
+  const navigate = useNavigate()
+  const [user, setUser] = useState(() => getCurrentUser())
+
+  // 다른 페이지에서 로그인/로그아웃 시 Navbar에도 반영
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setUser(getCurrentUser())
+    }, 500)
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleLogout = () => {
+    logout()
+    setUser(null)
+    navigate('/')
+  }
+
   return (
     <nav className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -27,9 +46,26 @@ function Navbar() {
           </Link>
         </div>
 
-        <button className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 font-medium">
-          로그인
-        </button>
+        {user ? (
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-700 hidden md:inline">
+              <span className="font-semibold">{user.name}</span> 님
+            </span>
+            <button 
+              onClick={handleLogout}
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 font-medium text-sm"
+            >
+              로그아웃
+            </button>
+          </div>
+        ) : (
+          <Link 
+            to="/login"
+            className="bg-purple-700 text-white px-4 py-2 rounded-lg hover:bg-purple-800 font-medium text-sm"
+          >
+            로그인
+          </Link>
+        )}
 
       </div>
     </nav>

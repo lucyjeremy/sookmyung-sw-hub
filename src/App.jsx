@@ -8,6 +8,8 @@ import MyPage from './pages/MyPage'
 import SearchBar from './components/SearchBar'
 import ReportPage from './pages/ReportPage'
 import CalendarPage from './pages/CalendarPage'
+import LoginPage from './pages/LoginPage'
+import SignupPage from './pages/SignupPage'
 import { fetchActivities } from './api/activities'
 import { applyFiltersAndSort } from './utils/filter'
 
@@ -112,6 +114,14 @@ function App() {
           <Route 
             path="/calendar" 
             element={<CalendarPage activities={activities} />} 
+          />
+          <Route 
+            path="/login" 
+            element={<LoginPage />} 
+          />
+          <Route 
+            path="/signup" 
+            element={<SignupPage />} 
           />
         </Routes>
       </div>
