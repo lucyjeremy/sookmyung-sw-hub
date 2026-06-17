@@ -16,6 +16,14 @@ export const filterGroups = [
     label: '신청 단위',
     options: ['개인', '팀'],
   },
+  {
+    label: '학년',
+    options: ['1학년', '2학년', '3학년', '4학년', '전학년'],
+  },
+  {
+    label: '시기',
+    options: ['이번 주 마감', '이번 달 마감', '진행 중'],
+  },
 ]
 
 // props로 selected, onToggle 받기

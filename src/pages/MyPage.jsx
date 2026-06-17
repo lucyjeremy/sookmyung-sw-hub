@@ -5,12 +5,15 @@ import { getReviews } from '../utils/review'
 import { getActivityIdsByStatus, STATUS_OPTIONS } from '../utils/application'
 import ActivityCard from '../components/ActivityCard'
 import ProfileEditor from '../components/ProfileEditor'
+import { getReports } from '../utils/report'
+import { Link } from 'react-router-dom'
 
 const COLORS = ['#7c3aed', '#2563eb', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#a855f7']
 
 function MyPage({ activities }) {
   const bookmarkIds = getBookmarks()
   const reviews = getReviews()
+  const reports = getReports()
 
   // 상태별 활동 목록
   const activitiesByStatus = useMemo(() => {
@@ -228,6 +231,55 @@ function MyPage({ activities }) {
         ) : (
           <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500">
             아직 후기가 없어요.
+          </div>
+        )}
+      </section>
+
+      {/* 활동 제보 결과 */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-gray-900">
+            활동 제보 결과 ({reports.length})
+          </h2>
+          <Link to="/report" className="text-sm text-purple-700 hover:underline">
+            제보하기 →
+          </Link>
+        </div>
+        {reports.length > 0 ? (
+          <div className="space-y-2">
+            {reports.map(r => (
+              <div key={r.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold text-gray-900 text-sm">{r.title}</h4>
+                      <span className={
+                        r.status === '대기' 
+                          ? 'text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded'
+                          : 'text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded'
+                      }>
+                        {r.status}
+                      </span>
+                    </div>
+                    {r.organization && (
+                      <div className="text-xs text-gray-500 mt-1">{r.organization}</div>
+                    )}
+                    {r.adminComment && (
+                      <div className="mt-2 bg-gray-50 rounded p-2 text-xs text-gray-700">
+                        💬 관리자: {r.adminComment}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-400">
+                    {new Date(r.createdAt).toLocaleDateString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-gray-200 p-8 text-center text-gray-500 text-sm">
+            아직 제보한 활동이 없어요. <Link to="/report" className="text-purple-700 hover:underline">제보하러 가기</Link>
           </div>
         )}
       </section>

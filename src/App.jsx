@@ -10,6 +10,7 @@ import ReportPage from './pages/ReportPage'
 import CalendarPage from './pages/CalendarPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import ChatPage from './pages/ChatPage'
 import { fetchActivities } from './api/activities'
 import { applyFiltersAndSort } from './utils/filter'
 
@@ -122,6 +123,10 @@ function App() {
           <Route 
             path="/signup" 
             element={<SignupPage />} 
+          />
+          <Route 
+            path="/chat" 
+            element={<ChatPage />} 
           />
         </Routes>
       </div>
