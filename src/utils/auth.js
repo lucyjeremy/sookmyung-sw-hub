@@ -48,3 +48,51 @@ export function login(email, password) {
 export function logout() {
   localStorage.removeItem(USER_KEY)
 }
+
+// 회원정보 수정 (이름, 비밀번호)
+export function updateProfile({ name, currentPassword, newPassword }) {
+  const current = getCurrentUser()
+  if (!current) throw new Error('로그인이 필요합니다.')
+
+  const users = getUsers()
+  const idx = users.findIndex(u => u.email === current.email)
+  if (idx === -1) throw new Error('사용자를 찾을 수 없습니다.')
+
+  // 비밀번호 바꾸려면 현재 비번 확인
+  if (newPassword) {
+    if (users[idx].password !== currentPassword) {
+      throw new Error('현재 비밀번호가 일치하지 않습니다.')
+    }
+    if (newPassword.length < 4) {
+      throw new Error('새 비밀번호는 4자 이상이어야 합니다.')
+    }
+    users[idx].password = newPassword
+  }
+
+  if (name) {
+    users[idx].name = name
+  }
+
+  localStorage.setItem(USERS_KEY, JSON.stringify(users))
+
+  // 현재 로그인된 사용자 정보도 갱신
+  const { password: _, ...safeUser } = users[idx]
+  localStorage.setItem(USER_KEY, JSON.stringify(safeUser))
+  return safeUser
+}
+
+// 회원 탈퇴 (모든 사용자 데이터 삭제)
+export function deleteAccount() {
+  const current = getCurrentUser()
+  if (!current) throw new Error('로그인이 필요합니다.')
+
+  const users = getUsers().filter(u => u.email !== current.email)
+  localStorage.setItem(USERS_KEY, JSON.stringify(users))
+  localStorage.removeItem(USER_KEY)
+
+  // 본인이 만든 데이터도 다 삭제
+  localStorage.removeItem('bookmarked_activities')
+  localStorage.removeItem('activity_reviews')
+  localStorage.removeItem('application_status')
+  localStorage.removeItem('activity_reports')
+}

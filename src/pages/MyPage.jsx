@@ -4,6 +4,7 @@ import { getBookmarks } from '../utils/bookmark'
 import { getReviews } from '../utils/review'
 import { getActivityIdsByStatus, STATUS_OPTIONS } from '../utils/application'
 import ActivityCard from '../components/ActivityCard'
+import ProfileEditor from '../components/ProfileEditor'
 
 const COLORS = ['#7c3aed', '#2563eb', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#a855f7']
 
@@ -55,6 +56,9 @@ function MyPage({ activities }) {
     <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
       
       <h1 className="text-3xl font-bold text-gray-900">마이페이지</h1>
+
+      {/* 내 정보 수정 */}
+      <ProfileEditor />
 
       {/* 요약 카드 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
