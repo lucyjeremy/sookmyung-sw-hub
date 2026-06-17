@@ -1,7 +1,37 @@
+import { useState } from 'react'
 import { isDeadlineSoon } from '../utils/date'
+import { isBookmarked, toggleBookmark } from '../utils/bookmark'
+import { getReviewByActivityId, addReview, updateReview, deleteReview } from '../utils/review'
+import ReviewForm from './ReviewForm'
+import ReviewItem from './ReviewItem'
 
 function ActivityCard({ activity }) {
   const deadlineSoon = isDeadlineSoon(activity.applyEnd)
+  const [bookmarked, setBookmarked] = useState(() => isBookmarked(activity.id))
+
+  const [review, setReview] = useState(() => getReviewByActivityId(activity.id))
+  const [showForm, setShowForm] = useState(false)
+
+  const handleBookmarkClick = () => {
+    toggleBookmark(activity.id)
+    setBookmarked(prev => !prev)
+  }
+
+  const handleAddReview = (content, rating) => {
+    const newReview = addReview(activity.id, activity.title, content, rating)
+    setReview(newReview)
+    setShowForm(false)
+  }
+
+  const handleUpdateReview = (reviewId, content, rating) => {
+    const updated = updateReview(reviewId, content, rating)
+    setReview(updated)
+  }
+
+  const handleDeleteReview = (reviewId) => {
+    deleteReview(reviewId)
+    setReview(null)
+  }
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition flex flex-col">
@@ -39,8 +69,15 @@ function ActivityCard({ activity }) {
               </span>
             )}
           </div>
-          <button className="text-gray-300 hover:text-yellow-500 text-xl">
-            ☆
+          <button 
+            onClick={handleBookmarkClick} 
+            className={
+              bookmarked
+              ? 'text-yellow-500 text-xl'
+              : 'text-gray-300 hover:text-yellow-500 text-xl'
+            }
+          >
+            {bookmarked ? '★' : '☆'}
           </button>
         </div>
 
@@ -84,9 +121,30 @@ function ActivityCard({ activity }) {
         >
           신청하기 ↗
         </a>
-      </div>
-    </div>
-  )
-}
 
-export default ActivityCard
+        <div className="mt-3 pt-3 border-t border-gray-100">
+          {review ? (
+            <ReviewItem 
+              review={review} 
+              onUpdate={handleUpdateReview}
+              onDelete={handleDeleteReview}
+            />
+        ) : showForm ? (
+          <ReviewForm
+            onSubmit={handleAddReview}
+            onCancel={() => setShowForm(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setShowForm(true)}
+            className="w-full text-sm text-purple-700 hover:bg-purple-50 py-2 rounded-lg border border-purple-200"
+          >
+          </button>
+        )}
+      </div>
+            </div>
+          </div>
+        )
+      }
+
+      export default ActivityCard
