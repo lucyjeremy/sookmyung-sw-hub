@@ -7,6 +7,7 @@ import FilterBar from './components/FilterBar'
 import MyPage from './pages/MyPage'
 import SearchBar from './components/SearchBar'
 import ReportPage from './pages/ReportPage'
+import CalendarPage from './pages/CalendarPage'
 import { fetchActivities } from './api/activities'
 import { applyFiltersAndSort } from './utils/filter'
 
@@ -106,7 +107,12 @@ function App() {
           />
           <Route 
             path="/report" 
-            element={<ReportPage />} />
+            element={<ReportPage />} 
+          />
+          <Route 
+            path="/calendar" 
+            element={<CalendarPage activities={activities} />} 
+          />
         </Routes>
       </div>
     </BrowserRouter>
