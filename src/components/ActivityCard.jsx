@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { isDeadlineSoon } from '../utils/date'
+import { isDeadlineSoon, getDaysUntilDeadline } from '../utils/date'
 import { isBookmarked, toggleBookmark } from '../utils/bookmark'
 import { getReviewByActivityId, addReview, updateReview, deleteReview } from '../utils/review'
 import { getStatus, setStatus, STATUS_OPTIONS } from '../utils/application'
@@ -8,6 +8,7 @@ import ReviewItem from './ReviewItem'
 
 function ActivityCard({ activity }) {
   const deadlineSoon = isDeadlineSoon(activity.applyEnd)
+  const daysLeft = getDaysUntilDeadline(activity.applyEnd)
   const [bookmarked, setBookmarked] = useState(() => isBookmarked(activity.id))
   const [appStatus, setAppStatus] = useState(() => getStatus(activity.id))
   const [review, setReview] = useState(() => getReviewByActivityId(activity.id))
@@ -39,20 +40,45 @@ function ActivityCard({ activity }) {
     setReview(null)
   }
 
+  // 분야를 쉼표로 분리 (여러 태그 표시)
+  const fields = (activity.field || '').split(',').map(s => s.trim()).filter(Boolean)
+
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition flex flex-col">
+    <div 
+      className={
+        bookmarked
+          ? 'bg-white rounded-xl border-2 border-yellow-400 overflow-hidden hover:shadow-lg transition flex flex-col'
+          : 'bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg hover:border-purple-300 transition flex flex-col'
+      }
+    >
       
       {/* 포스터 이미지 */}
-      <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
+      <div className="aspect-[4/3] bg-gradient-to-br from-purple-50 to-blue-50 overflow-hidden relative">
         {activity.image ? (
           <img 
             src={activity.image} 
             alt={activity.title}
             className="w-full h-full object-cover"
+            onError={(e) => { e.target.style.display = 'none' }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
-            이미지 없음
+          <div className="w-full h-full flex flex-col items-center justify-center text-purple-400 p-4">
+            <span className="text-4xl mb-2">📚</span>
+            <span className="text-xs text-center line-clamp-2">{activity.title}</span>
+          </div>
+        )}
+        
+        {/* 마감 임박 오버레이 */}
+        {deadlineSoon && (
+          <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded shadow">
+            {daysLeft === 0 ? '오늘 마감' : `D-${daysLeft}`}
+          </div>
+        )}
+
+        {/* 현재 상태 오버레이 */}
+        {appStatus && (
+          <div className="absolute top-2 right-2 bg-purple-700 text-white text-xs font-bold px-2 py-1 rounded shadow">
+            {appStatus}
           </div>
         )}
       </div>
@@ -61,17 +87,21 @@ function ActivityCard({ activity }) {
       <div className="p-4 flex flex-col flex-1">
         
         {/* 뱃지 + 북마크 */}
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-start justify-between mb-2 gap-2">
           <div className="flex flex-wrap gap-1">
-            <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded">
-              {activity.source}
-            </span>
-            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
-              {activity.field}
-            </span>
-            {deadlineSoon && (
-              <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">
-                마감 임박
+            {activity.source && (
+              <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium">
+                {activity.source}
+              </span>
+            )}
+            {fields.map(f => (
+              <span key={f} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium">
+                {f}
+              </span>
+            ))}
+            {activity.team && (
+              <span className="text-xs bg-gray-100 text-gray-700 px-2 py-0.5 rounded font-medium">
+                {activity.team}
               </span>
             )}
           </div>
@@ -79,44 +109,51 @@ function ActivityCard({ activity }) {
             onClick={handleBookmarkClick} 
             className={
               bookmarked
-              ? 'text-yellow-500 text-xl'
-              : 'text-gray-300 hover:text-yellow-500 text-xl'
+                ? 'text-yellow-500 text-xl shrink-0'
+                : 'text-gray-300 hover:text-yellow-500 text-xl shrink-0'
             }
+            aria-label="북마크"
           >
             {bookmarked ? '★' : '☆'}
           </button>
         </div>
 
         {/* 제목 + 기관 */}
-        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1">
+        <h3 className="font-semibold text-gray-900 line-clamp-2 mb-1 text-sm">
           {activity.title}
         </h3>
-        <p className="text-sm text-gray-500 mb-3">
+        <p className="text-xs text-gray-500 mb-3">
           {activity.organization}
         </p>
 
         {/* 날짜 정보 */}
         <div className="grid grid-cols-2 gap-2 text-xs mb-3 mt-auto">
-          <div>
-            <div className="text-gray-400">활동 기간</div>
-            <div className="text-gray-700">
+          <div className="bg-gray-50 rounded p-2">
+            <div className="text-gray-400 mb-0.5">활동 기간</div>
+            <div className="text-gray-800 font-medium">
               {activity.startDate?.slice(0, 10)}<br />
               ~ {activity.endDate?.slice(5, 10)}
             </div>
           </div>
-          <div>
-            <div className="text-gray-400">신청 기간</div>
-            <div className="text-gray-700">
-              {activity.applyStart?.slice(0, 10)}<br />
-              ~ {activity.applyEnd?.slice(5, 10)}
+          <div className="bg-gray-50 rounded p-2">
+            <div className="text-gray-400 mb-0.5">신청 마감</div>
+            <div className="text-gray-800 font-medium">
+              {activity.applyEnd?.slice(0, 10)}
+              {daysLeft !== null && daysLeft >= 0 && (
+                <div className={daysLeft <= 3 ? 'text-red-600 font-bold' : 'text-gray-500'}>
+                  {daysLeft === 0 ? '오늘' : `${daysLeft}일 남음`}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* 모집 인원 */}
-        <div className="text-xs text-gray-600 mb-3">
-          모집 인원: <span className="font-semibold">{activity.capacity}명</span>
-        </div>
+        {activity.capacity && (
+          <div className="text-xs text-gray-600 mb-3">
+            모집 인원: <span className="font-semibold text-gray-900">{activity.capacity}명</span>
+          </div>
+        )}
 
         {/* 신청 상태 토글 */}
         <div className="flex gap-1 mb-2">
@@ -126,8 +163,8 @@ function ActivityCard({ activity }) {
               onClick={() => handleStatusClick(status)}
               className={
                 appStatus === status
-                  ? 'flex-1 text-xs py-1 rounded bg-purple-700 text-white'
-                  : 'flex-1 text-xs py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'flex-1 text-xs py-1.5 rounded bg-purple-700 text-white font-medium'
+                  : 'flex-1 text-xs py-1.5 rounded bg-gray-100 text-gray-600 hover:bg-gray-200'
               }
             >
               {status}
@@ -140,7 +177,7 @@ function ActivityCard({ activity }) {
           href={activity.applyLink}
           target="_blank"
           rel="noopener noreferrer"
-          className="block text-center bg-purple-700 text-white py-2 rounded-lg hover:bg-purple-800 font-medium text-sm"
+          className="block text-center bg-purple-700 text-white py-2 rounded-lg hover:bg-purple-800 font-medium text-sm shadow-sm"
         >
           신청하기 ↗
         </a>
