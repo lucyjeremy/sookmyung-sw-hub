@@ -6,6 +6,7 @@ import ActivityCard from './components/ActivityCard'
 import FilterBar from './components/FilterBar'
 import MyPage from './pages/MyPage'
 import SearchBar from './components/SearchBar'
+import ReportPage from './pages/ReportPage'
 import { fetchActivities } from './api/activities'
 import { applyFiltersAndSort } from './utils/filter'
 
@@ -103,6 +104,9 @@ function App() {
             path="/mypage" 
             element={<MyPage activities={activities} />} 
           />
+          <Route 
+            path="/report" 
+            element={<ReportPage />} />
         </Routes>
       </div>
     </BrowserRouter>

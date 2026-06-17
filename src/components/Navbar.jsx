@@ -16,6 +16,9 @@ function Navbar() {
           <Link to="/" className="text-gray-700 hover:text-purple-700 font-medium">
             활동 목록
           </Link>
+          <Link to="/report" className="text-gray-700 hover:text-purple-700 font-medium">
+            활동 제보
+          </Link>
           <Link to="/mypage" className="text-gray-700 hover:text-purple-700 font-medium">
             마이페이지
           </Link>
