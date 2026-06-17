@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
 import { getBookmarks } from '../utils/bookmark'
 import { getReviews } from '../utils/review'
+import { getActivityIdsByStatus, STATUS_OPTIONS } from '../utils/application'
 import ActivityCard from '../components/ActivityCard'
 
 const COLORS = ['#7c3aed', '#2563eb', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#a855f7']
@@ -10,39 +11,45 @@ function MyPage({ activities }) {
   const bookmarkIds = getBookmarks()
   const reviews = getReviews()
 
+  // 상태별 활동 목록
+  const activitiesByStatus = useMemo(() => {
+    const result = {}
+    STATUS_OPTIONS.forEach(status => {
+      const ids = getActivityIdsByStatus(status)
+      result[status] = activities.filter(a => ids.includes(a.id))
+    })
+    return result
+  }, [activities])
+
+  const completedActivities = activitiesByStatus['활동완료']
+
   // 북마크한 활동들
   const bookmarkedActivities = useMemo(
     () => activities.filter(a => bookmarkIds.includes(a.id)),
     [activities, bookmarkIds]
   )
 
-  // 후기 작성한 활동들 = "참여한 활동"으로 간주
-  const reviewedActivities = useMemo(
-    () => activities.filter(a => reviews.some(r => r.activityId === a.id)),
-    [activities, reviews]
-  )
-
   // 세부 분야 통계 (참여한 활동 기준)
   const fieldStats = useMemo(() => {
     const counts = {}
-    reviewedActivities.forEach(a => {
+    completedActivities.forEach(a => {
       const fields = (a.field || '').split(',').map(s => s.trim()).filter(Boolean)
       fields.forEach(f => {
         counts[f] = (counts[f] || 0) + 1
       })
     })
     return Object.entries(counts).map(([name, value]) => ({ name, value }))
-  }, [reviewedActivities])
+  }, [completedActivities])
 
   // 활동 히트맵 데이터 (월별)
   const monthlyHeatmap = useMemo(() => {
     const counts = {}
-    reviewedActivities.forEach(a => {
+    completedActivities.forEach(a => {
       const month = a.startDate?.slice(0, 7) // "2026-06"
       if (month) counts[month] = (counts[month] || 0) + 1
     })
     return Object.entries(counts).sort(([a], [b]) => a.localeCompare(b))
-  }, [reviewedActivities])
+  }, [completedActivities])
 
   return (
     <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">
@@ -50,7 +57,7 @@ function MyPage({ activities }) {
       <h1 className="text-3xl font-bold text-gray-900">마이페이지</h1>
 
       {/* 요약 카드 */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="text-sm text-gray-500">북마크</div>
           <div className="text-3xl font-bold text-purple-700 mt-1">
@@ -58,14 +65,26 @@ function MyPage({ activities }) {
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
-          <div className="text-sm text-gray-500">참여한 활동</div>
+          <div className="text-sm text-gray-500">신청완료</div>
           <div className="text-3xl font-bold text-blue-700 mt-1">
-            {reviewedActivities.length}
+            {activitiesByStatus['신청완료'].length}
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="text-sm text-gray-500">활동중</div>
+          <div className="text-3xl font-bold text-orange-600 mt-1">
+            {activitiesByStatus['활동중'].length}
+          </div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-4">
+          <div className="text-sm text-gray-500">활동완료</div>
+          <div className="text-3xl font-bold text-green-700 mt-1">
+            {activitiesByStatus['활동완료'].length}
           </div>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-4">
           <div className="text-sm text-gray-500">작성한 후기</div>
-          <div className="text-3xl font-bold text-green-700 mt-1">
+          <div className="text-3xl font-bold text-pink-700 mt-1">
             {reviews.length}
           </div>
         </div>
@@ -74,7 +93,7 @@ function MyPage({ activities }) {
       {/* 분야 비율 차트 */}
       <section className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-bold text-gray-900 mb-4">
-          참여한 활동의 분야 비율
+          활동완료한 활동의 분야 비율
         </h2>
         {fieldStats.length > 0 ? (
           <div style={{ width: '100%', height: 300 }}>
@@ -99,7 +118,7 @@ function MyPage({ activities }) {
           </div>
         ) : (
           <div className="text-center text-gray-500 py-8">
-            아직 참여한 활동이 없어요. 활동 후기를 작성하면 통계가 표시됩니다.
+            아직 활동완료한 활동이 없어요. 활동 후기를 작성하면 통계가 표시됩니다.
           </div>
         )}
       </section>
@@ -134,6 +153,33 @@ function MyPage({ activities }) {
             아직 활동 기록이 없어요.
           </div>
         )}
+      </section>
+
+      {/* 신청 현황 */}
+      <section>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">
+          신청 현황
+        </h2>
+        <div className="space-y-6">
+          {STATUS_OPTIONS.map(status => (
+            <div key={status}>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                {status} ({activitiesByStatus[status].length})
+              </h3>
+              {activitiesByStatus[status].length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {activitiesByStatus[status].map(a => (
+                    <ActivityCard key={a.id} activity={a} />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-xl border border-gray-200 p-4 text-center text-gray-500 text-sm">
+                  해당하는 활동이 없어요.
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* 북마크 목록 */}

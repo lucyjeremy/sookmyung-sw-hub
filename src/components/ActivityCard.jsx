@@ -2,15 +2,21 @@ import { useState } from 'react'
 import { isDeadlineSoon } from '../utils/date'
 import { isBookmarked, toggleBookmark } from '../utils/bookmark'
 import { getReviewByActivityId, addReview, updateReview, deleteReview } from '../utils/review'
+import { getStatus, setStatus, STATUS_OPTIONS } from '../utils/application'
 import ReviewForm from './ReviewForm'
 import ReviewItem from './ReviewItem'
 
 function ActivityCard({ activity }) {
   const deadlineSoon = isDeadlineSoon(activity.applyEnd)
   const [bookmarked, setBookmarked] = useState(() => isBookmarked(activity.id))
-
+  const [appStatus, setAppStatus] = useState(() => getStatus(activity.id))
   const [review, setReview] = useState(() => getReviewByActivityId(activity.id))
   const [showForm, setShowForm] = useState(false)
+
+  const handleStatusClick = (status) => {
+    const newStatus = setStatus(activity.id, status)
+    setAppStatus(newStatus)
+  }
 
   const handleBookmarkClick = () => {
     toggleBookmark(activity.id)
@@ -112,6 +118,23 @@ function ActivityCard({ activity }) {
           모집 인원: <span className="font-semibold">{activity.capacity}명</span>
         </div>
 
+        {/* 신청 상태 토글 */}
+        <div className="flex gap-1 mb-2">
+          {STATUS_OPTIONS.map(status => (
+            <button
+              key={status}
+              onClick={() => handleStatusClick(status)}
+              className={
+                appStatus === status
+                  ? 'flex-1 text-xs py-1 rounded bg-purple-700 text-white'
+                  : 'flex-1 text-xs py-1 rounded bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }
+            >
+              {status}
+            </button>
+          ))}
+        </div>
+
         {/* 신청하기 버튼 */}
         <a 
           href={activity.applyLink}
@@ -122,6 +145,7 @@ function ActivityCard({ activity }) {
           신청하기 ↗
         </a>
 
+        {/* 후기 영역 */}
         <div className="mt-3 pt-3 border-t border-gray-100">
           {review ? (
             <ReviewItem 
@@ -129,22 +153,24 @@ function ActivityCard({ activity }) {
               onUpdate={handleUpdateReview}
               onDelete={handleDeleteReview}
             />
-        ) : showForm ? (
-          <ReviewForm
-            onSubmit={handleAddReview}
-            onCancel={() => setShowForm(false)}
-          />
-        ) : (
-          <button
-            onClick={() => setShowForm(true)}
-            className="w-full text-sm text-purple-700 hover:bg-purple-50 py-2 rounded-lg border border-purple-200"
-          >
-          </button>
-        )}
-      </div>
-            </div>
-          </div>
-        )
-      }
+          ) : showForm ? (
+            <ReviewForm
+              onSubmit={handleAddReview}
+              onCancel={() => setShowForm(false)}
+            />
+          ) : (
+            <button
+              onClick={() => setShowForm(true)}
+              className="w-full text-sm text-purple-700 hover:bg-purple-50 py-2 rounded-lg border border-purple-200"
+            >
+              ✏️ 후기 작성하기
+            </button>
+          )}
+        </div>
 
-      export default ActivityCard
+      </div>
+    </div>
+  )
+}
+
+export default ActivityCard
