@@ -96,3 +96,11 @@ export function deleteAccount() {
   localStorage.removeItem('application_status')
   localStorage.removeItem('activity_reports')
 }
+
+// 관리자 이메일 (하드코딩)
+const ADMIN_EMAILS = ['kimjunyoung@sookmyung.ac.kr']
+
+export function isAdmin() {
+  const user = getCurrentUser()
+  return user && ADMIN_EMAILS.includes(user.email)
+}

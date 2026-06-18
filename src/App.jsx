@@ -4,34 +4,18 @@ import Navbar from './components/Navbar'
 import SiteLinks from './components/SiteLinks'
 import ActivityCard from './components/ActivityCard'
 import FilterBar from './components/FilterBar'
-import MyPage from './pages/MyPage'
 import SearchBar from './components/SearchBar'
-import ReportPage from './pages/ReportPage'
+import MyPage from './pages/MyPage'
 import CalendarPage from './pages/CalendarPage'
+import ReportPage from './pages/ReportPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import ChatPage from './pages/ChatPage'
+import AdminPage from './pages/AdminPage'
 import { fetchActivities } from './api/activities'
 import { applyFiltersAndSort } from './utils/filter'
 
-function HomePage({ activities, loading, error }) {
-  const [selected, setSelected] = useState({})
-  const [keyword, setKeyword] = useState('')
-
-  const handleToggle = (group, option) => {
-    setSelected(prev => {
-      const current = prev[group] || []
-      const isOn = current.includes(option)
-      if (group === '정렬') {
-        return { ...prev, [group]: isOn ? [] : [option] }
-      }
-      return {
-        ...prev,
-        [group]: isOn ? current.filter(o => o !== option) : [...current, option],
-      }
-    })
-  }
-
+function HomePage({ activities, loading, error, selected, onToggle, keyword, onKeywordChange }) {
   const visibleActivities = useMemo(
     () => applyFiltersAndSort(activities, selected, keyword),
     [activities, selected, keyword]
@@ -40,8 +24,8 @@ function HomePage({ activities, loading, error }) {
   return (
     <main className="max-w-7xl mx-auto px-6 py-8">
       <SiteLinks />
-      <FilterBar selected={selected} onToggle={handleToggle} />
-      <SearchBar value={keyword} onChange={setKeyword} />
+      <SearchBar value={keyword} onChange={onKeywordChange} />
+      <FilterBar selected={selected} onToggle={onToggle} activities={activities} />
 
       <div className="text-sm text-gray-600 mb-4">
         {loading ? (
@@ -81,6 +65,10 @@ function App() {
   const [activities, setActivities] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  
+  // 필터 상태 — 메인이랑 캘린더가 공유
+  const [selected, setSelected] = useState({})
+  const [keyword, setKeyword] = useState('')
 
   useEffect(() => {
     fetchActivities()
@@ -95,6 +83,20 @@ function App() {
       })
   }, [])
 
+  const handleToggle = (group, option) => {
+    setSelected(prev => {
+      const current = prev[group] || []
+      const isOn = current.includes(option)
+      if (group === '정렬') {
+        return { ...prev, [group]: isOn ? [] : [option] }
+      }
+      return {
+        ...prev,
+        [group]: isOn ? current.filter(o => o !== option) : [...current, option],
+      }
+    })
+  }
+
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50">
@@ -102,32 +104,34 @@ function App() {
         <Routes>
           <Route 
             path="/" 
-            element={<HomePage activities={activities} loading={loading} error={error} />} 
-          />
-          <Route 
-            path="/mypage" 
-            element={<MyPage activities={activities} />} 
-          />
-          <Route 
-            path="/report" 
-            element={<ReportPage />} 
+            element={
+              <HomePage 
+                activities={activities} 
+                loading={loading} 
+                error={error}
+                selected={selected}
+                onToggle={handleToggle}
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+              />
+            } 
           />
           <Route 
             path="/calendar" 
-            element={<CalendarPage activities={activities} />} 
+            element={
+              <CalendarPage 
+                activities={activities}
+                selected={selected}
+                keyword={keyword}
+              />
+            } 
           />
-          <Route 
-            path="/login" 
-            element={<LoginPage />} 
-          />
-          <Route 
-            path="/signup" 
-            element={<SignupPage />} 
-          />
-          <Route 
-            path="/chat" 
-            element={<ChatPage />} 
-          />
+          <Route path="/mypage" element={<MyPage activities={activities} />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/chat" element={<ChatPage />} />
+          <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
     </BrowserRouter>

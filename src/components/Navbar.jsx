@@ -1,15 +1,17 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { getCurrentUser, logout } from '../utils/auth'
+import { getCurrentUser, logout, isAdmin } from '../utils/auth'  // isAdmin 추가
 
 function Navbar() {
   const navigate = useNavigate()
   const [user, setUser] = useState(() => getCurrentUser())
+  const [admin, setAdmin] = useState(() => isAdmin())
 
   // 다른 페이지에서 로그인/로그아웃 시 Navbar에도 반영
   useEffect(() => {
     const interval = setInterval(() => {
       setUser(getCurrentUser())
+      setAdmin(isAdmin())
     }, 500)
     return () => clearInterval(interval)
   }, [])
@@ -47,6 +49,14 @@ function Navbar() {
           <Link to="/chat" className="text-gray-700 hover:text-purple-700 font-medium">
             채팅
           </Link>
+          <Link to="/mypage" className="text-gray-700 hover:text-purple-700 font-medium">
+            마이페이지
+          </Link>
+            {admin && (
+              <Link to="/admin" className="text-red-600 hover:text-red-700 font-bold">
+                관리자
+              </Link>
+            )}
         </div>
 
         {user ? (

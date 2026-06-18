@@ -26,3 +26,18 @@ export function deleteReport(reportId) {
   const reports = getReports().filter(r => r.id !== reportId)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reports))
 }
+
+// 관리자: 제보 상태 변경 + 코멘트
+export function updateReportStatus(reportId, status, adminComment) {
+  const reports = getReports()
+  const idx = reports.findIndex(r => r.id === reportId)
+  if (idx === -1) return null
+  reports[idx] = {
+    ...reports[idx],
+    status,
+    adminComment: adminComment || '',
+    reviewedAt: new Date().toISOString(),
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reports))
+  return reports[idx]
+}

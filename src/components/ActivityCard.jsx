@@ -5,6 +5,8 @@ import { getReviewByActivityId, addReview, updateReview, deleteReview } from '..
 import { getStatus, setStatus, STATUS_OPTIONS } from '../utils/application'
 import ReviewForm from './ReviewForm'
 import ReviewItem from './ReviewItem'
+import { getCurrentUser } from '../utils/auth'
+import { useNavigate } from 'react-router-dom'
 
 function ActivityCard({ activity }) {
   const deadlineSoon = isDeadlineSoon(activity.applyEnd)
@@ -13,13 +15,27 @@ function ActivityCard({ activity }) {
   const [appStatus, setAppStatus] = useState(() => getStatus(activity.id))
   const [review, setReview] = useState(() => getReviewByActivityId(activity.id))
   const [showForm, setShowForm] = useState(false)
+  const navigate = useNavigate()
+  const isLoggedIn = !!getCurrentUser()
 
   const handleStatusClick = (status) => {
+    if (!isLoggedIn) {
+      if (confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) {
+        navigate('/login')
+      }
+      return
+    }
     const newStatus = setStatus(activity.id, status)
     setAppStatus(newStatus)
   }
 
   const handleBookmarkClick = () => {
+    if (!isLoggedIn) {
+      if (confirm('로그인이 필요한 기능입니다. 로그인 페이지로 이동할까요?')) {
+        navigate('/login')
+      }
+      return
+    }
     toggleBookmark(activity.id)
     setBookmarked(prev => !prev)
   }
@@ -182,28 +198,30 @@ function ActivityCard({ activity }) {
           신청하기 ↗
         </a>
 
-        {/* 후기 영역 */}
-        <div className="mt-3 pt-3 border-t border-gray-100">
-          {review ? (
-            <ReviewItem 
-              review={review} 
-              onUpdate={handleUpdateReview}
-              onDelete={handleDeleteReview}
-            />
-          ) : showForm ? (
-            <ReviewForm
-              onSubmit={handleAddReview}
-              onCancel={() => setShowForm(false)}
-            />
-          ) : (
-            <button
-              onClick={() => setShowForm(true)}
-              className="w-full text-sm text-purple-700 hover:bg-purple-50 py-2 rounded-lg border border-purple-200"
-            >
-              ✏️ 후기 작성하기
-            </button>
-          )}
-        </div>
+        {/* 후기 영역 (로그인 + 활동완료 상태일 때만) */}
+        {isLoggedIn && (appStatus === '활동완료' || review) && (
+          <div className="mt-3 pt-3 border-t border-gray-100">
+            {review ? (
+              <ReviewItem 
+                review={review} 
+                onUpdate={handleUpdateReview}
+                onDelete={handleDeleteReview}
+              />
+            ) : showForm ? (
+              <ReviewForm
+                onSubmit={handleAddReview}
+                onCancel={() => setShowForm(false)}
+              />
+            ) : (
+              <button
+                onClick={() => setShowForm(true)}
+                className="w-full text-sm text-purple-700 hover:bg-purple-50 py-2 rounded-lg border border-purple-200"
+              >
+                ✏️ 후기 작성하기
+              </button>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

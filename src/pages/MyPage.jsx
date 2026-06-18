@@ -7,10 +7,36 @@ import ActivityCard from '../components/ActivityCard'
 import ProfileEditor from '../components/ProfileEditor'
 import { getReports } from '../utils/report'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'  // 이미 있을 수도 있음. 없으면 맨 위 import에 추가
+import { getCurrentUser } from '../utils/auth'  // 맨 위 import에 추가
 
 const COLORS = ['#7c3aed', '#2563eb', '#16a34a', '#ea580c', '#dc2626', '#0891b2', '#a855f7']
 
 function MyPage({ activities }) {
+  const me = getCurrentUser()
+  
+  if (!me) {
+    return (
+      <main className="max-w-2xl mx-auto px-6 py-16 text-center">
+        <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <span className="text-5xl">🔒</span>
+          <h2 className="text-xl font-bold text-gray-900 mt-4 mb-2">
+            로그인이 필요해요
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            마이페이지는 로그인한 사용자만 이용할 수 있습니다.
+          </p>
+          <a 
+            href="/login" 
+            className="inline-block bg-purple-700 text-white px-6 py-2 rounded-lg hover:bg-purple-800 font-medium"
+          >
+            로그인하러 가기
+          </a>
+        </div>
+      </main>
+    )
+  }
+
   const bookmarkIds = getBookmarks()
   const reviews = getReviews()
   const reports = getReports()
@@ -125,7 +151,7 @@ function MyPage({ activities }) {
           </div>
         ) : (
           <div className="text-center text-gray-500 py-8">
-            아직 활동완료한 활동이 없어요. 활동 후기를 작성하면 통계가 표시됩니다.
+            아직 활동완료한 활동이 없어요. 활동 카드에서 [활동완료] 버튼을 눌러보세요.
           </div>
         )}
       </section>
