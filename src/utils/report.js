@@ -11,15 +11,23 @@ export function getReports() {
 
 export function addReport(data) {
   const reports = getReports()
+  const user = JSON.parse(localStorage.getItem('current_user') || 'null')
   const newReport = {
     id: Date.now().toString(),
     ...data,
+    authorEmail: user?.email || 'anonymous',  // 작성자 기록
+    authorName: user?.name || '익명',
     status: '대기',
     createdAt: new Date().toISOString(),
   }
   reports.push(newReport)
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reports))
   return newReport
+}
+
+// 내 제보만 가져오기
+export function getMyReports(email) {
+  return getReports().filter(r => r.authorEmail === email)
 }
 
 export function deleteReport(reportId) {

@@ -1,8 +1,12 @@
 import { useState } from 'react'
-import { addReport, getReports, deleteReport } from '../utils/report'
+import { addReport, getMyReports, getReports, deleteReport } from '../utils/report'
+import { getCurrentUser } from '../utils/auth'
 
 function ReportPage() {
-  const [reports, setReports] = useState(() => getReports())
+  const me = getCurrentUser()
+  const [reports, setReports] = useState(() => 
+    me ? getMyReports(me.email) : []
+  )
   const [form, setForm] = useState({
     title: '',
     organization: '',
@@ -10,28 +14,54 @@ function ReportPage() {
     description: '',
   })
 
+  if (!me) {
+    return (
+      <main className="max-w-2xl mx-auto px-6 py-16 text-center">
+        <div className="bg-white rounded-xl border border-gray-200 p-8">
+          <span className="text-5xl">🔒</span>
+          <h2 className="text-xl font-bold text-gray-900 mt-4 mb-2">
+            로그인이 필요해요
+          </h2>
+          <p className="text-sm text-gray-600 mb-6">
+            활동 제보는 로그인한 사용자만 이용할 수 있습니다.
+          </p>
+          <a 
+            href="/login" 
+            className="inline-block bg-purple-700 text-white px-6 py-2 rounded-lg hover:bg-purple-800 font-medium"
+          >
+            로그인하러 가기
+          </a>
+        </div>
+      </main>
+    )
+  }
+
   const handleChange = (key, value) => {
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    if (!form.title.trim() || !form.applyLink.trim()) {
-      alert('제목과 링크는 필수입니다.')
-      return
-    }
-    addReport(form)
-    setReports(getReports())
-    setForm({ title: '', organization: '', applyLink: '', description: '' })
-    alert('제보 감사합니다! 관리자 검토 후 반영됩니다.')
+  e.preventDefault()
+  if (!form.title.trim() || !form.applyLink.trim()) {
+    alert('제목과 링크는 필수입니다.')
+    return
   }
+  if (!me) {
+    alert('제보하려면 로그인이 필요합니다.')
+    return
+  }
+  addReport(form)
+  setReports(getMyReports(me.email))  // ← 내 거만
+  setForm({ title: '', organization: '', applyLink: '', description: '' })
+  alert('제보 감사합니다! 관리자 검토 후 반영됩니다.')
+}
 
-  const handleDelete = (id) => {
-    if (confirm('제보를 삭제하시겠어요?')) {
-      deleteReport(id)
-      setReports(getReports())
-    }
+const handleDelete = (id) => {
+  if (confirm('제보를 삭제하시겠어요?')) {
+    deleteReport(id)
+    setReports(me ? getMyReports(me.email) : [])  // ← 내 거만
   }
+}
 
   return (
     <main className="max-w-3xl mx-auto px-6 py-8 space-y-8">

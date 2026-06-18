@@ -49,9 +49,6 @@ function Navbar() {
           <Link to="/chat" className="text-gray-700 hover:text-purple-700 font-medium">
             채팅
           </Link>
-          <Link to="/mypage" className="text-gray-700 hover:text-purple-700 font-medium">
-            마이페이지
-          </Link>
             {admin && (
               <Link to="/admin" className="text-red-600 hover:text-red-700 font-bold">
                 관리자

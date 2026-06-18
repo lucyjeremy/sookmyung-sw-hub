@@ -98,6 +98,16 @@ function AdminPage() {
                     {new Date(r.createdAt).toLocaleString()}
                   </div>
                 </div>
+
+                {/* 작성자 정보 추가 */}
+                <div className="text-xs text-gray-500 mb-1">
+                  제보자: {r.authorName || '익명'} ({r.authorEmail || 'anonymous'})
+                </div>
+
+                {r.organization && (
+                  <div className="text-sm text-gray-600 mb-1">기관: {r.organization}</div>
+                )}
+
                 {r.organization && (
                   <div className="text-sm text-gray-600 mb-1">기관: {r.organization}</div>
                 )}
@@ -182,6 +192,12 @@ function AdminPage() {
                         {r.status}
                       </span>
                     </div>
+
+                    {/* 작성자 추가 */}
+                    <div className="text-xs text-gray-500 mt-1">
+                      제보자: {r.authorName || '익명'}
+                    </div>
+
                     {r.adminComment && (
                       <p className="text-sm text-gray-600 mt-1">💬 {r.adminComment}</p>
                     )}

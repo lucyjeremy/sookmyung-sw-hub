@@ -5,7 +5,7 @@ import { getReviews } from '../utils/review'
 import { getActivityIdsByStatus, STATUS_OPTIONS } from '../utils/application'
 import ActivityCard from '../components/ActivityCard'
 import ProfileEditor from '../components/ProfileEditor'
-import { getReports } from '../utils/report'
+import { getMyReports } from '../utils/report'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'  // 이미 있을 수도 있음. 없으면 맨 위 import에 추가
 import { getCurrentUser } from '../utils/auth'  // 맨 위 import에 추가
@@ -39,7 +39,7 @@ function MyPage({ activities }) {
 
   const bookmarkIds = getBookmarks()
   const reviews = getReviews()
-  const reports = getReports()
+  const reports = getMyReports(me.email)
 
   // 상태별 활동 목록
   const activitiesByStatus = useMemo(() => {
