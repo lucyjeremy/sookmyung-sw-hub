@@ -26,7 +26,7 @@ function ReportPage() {
             활동 제보는 로그인한 사용자만 이용할 수 있습니다.
           </p>
           <a 
-            href="/login" 
+            href="#/login" 
             className="inline-block bg-purple-700 text-white px-6 py-2 rounded-lg hover:bg-purple-800 font-medium"
           >
             로그인하러 가기
