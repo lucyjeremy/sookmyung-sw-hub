@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HashRouter, Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import SiteLinks from './components/SiteLinks'
 import ActivityCard from './components/ActivityCard'
@@ -98,7 +98,7 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
         <Routes>
@@ -134,7 +134,7 @@ function App() {
           <Route path="/admin" element={<AdminPage />} />
         </Routes>
       </div>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
 
